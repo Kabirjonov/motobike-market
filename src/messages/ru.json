@@ -1,0 +1,37 @@
+{
+  "appName": "Motobike Market",
+  "tagline": "Дорога ваша. Выбор у нас.",
+  "locale": { "label": "Язык" },
+  "navigation": {
+    "ariaLabel": "Основная навигация",
+    "home": "Главная",
+    "catalog": "Каталог"
+  },
+  "admin": {
+    "panel": "Панель администратора",
+    "navigation": {
+      "ariaLabel": "Навигация администратора",
+      "dashboard": "Обзор",
+      "products": "Товары",
+      "categories": "Категории",
+      "brands": "Бренды",
+      "orders": "Заказы",
+      "settings": "Настройки"
+    }
+  },
+  "common": {
+    "loading": "Загрузка…",
+    "retry": "Повторить",
+    "empty": "Данные не найдены",
+    "save": "Сохранить",
+    "cancel": "Отмена"
+  },
+  "metadata": {
+    "description": "Интернет-магазин мотоциклов, запчастей, аксессуаров и экипировки.",
+    "notFound": "Страница не найдена"
+  },
+  "validation": {
+    "invalid": "Проверьте введённые данные.",
+    "required": "Обязательное поле."
+  }
+}

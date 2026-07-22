@@ -1,0 +1,37 @@
+{
+  "appName": "Motobike Market",
+  "tagline": "Your road. Our selection.",
+  "locale": { "label": "Language" },
+  "navigation": {
+    "ariaLabel": "Main navigation",
+    "home": "Home",
+    "catalog": "Catalog"
+  },
+  "admin": {
+    "panel": "Admin panel",
+    "navigation": {
+      "ariaLabel": "Admin navigation",
+      "dashboard": "Dashboard",
+      "products": "Products",
+      "categories": "Categories",
+      "brands": "Brands",
+      "orders": "Orders",
+      "settings": "Settings"
+    }
+  },
+  "common": {
+    "loading": "Loading…",
+    "retry": "Try again",
+    "empty": "No data found",
+    "save": "Save",
+    "cancel": "Cancel"
+  },
+  "metadata": {
+    "description": "Online marketplace for motorcycles, parts, accessories and riding gear.",
+    "notFound": "Page not found"
+  },
+  "validation": {
+    "invalid": "Check the information you entered.",
+    "required": "This field is required."
+  }
+}

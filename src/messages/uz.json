@@ -1,0 +1,37 @@
+{
+  "appName": "Motobike Market",
+  "tagline": "Yo‘l sizniki. Tanlov bizda.",
+  "locale": { "label": "Til" },
+  "navigation": {
+    "ariaLabel": "Asosiy navigatsiya",
+    "home": "Bosh sahifa",
+    "catalog": "Katalog"
+  },
+  "admin": {
+    "panel": "Admin panel",
+    "navigation": {
+      "ariaLabel": "Admin navigatsiya",
+      "dashboard": "Dashboard",
+      "products": "Mahsulotlar",
+      "categories": "Kategoriyalar",
+      "brands": "Brendlar",
+      "orders": "Buyurtmalar",
+      "settings": "Sozlamalar"
+    }
+  },
+  "common": {
+    "loading": "Yuklanmoqda…",
+    "retry": "Qayta urinish",
+    "empty": "Ma’lumot topilmadi",
+    "save": "Saqlash",
+    "cancel": "Bekor qilish"
+  },
+  "metadata": {
+    "description": "Mototsikllar, ehtiyot qismlar, aksessuarlar va ekipirovkalar online marketi.",
+    "notFound": "Sahifa topilmadi"
+  },
+  "validation": {
+    "invalid": "Kiritilgan ma’lumotlarni tekshiring.",
+    "required": "Bu maydon majburiy."
+  }
+}

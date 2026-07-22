@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: motobike_shop_test
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U postgres -d motobike_shop_test"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      TEST_DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/motobike_shop_test
+      TEST_ADMIN_EMAIL: qa-admin@example.com
+      TEST_ADMIN_PASSWORD: Test-admin-password-2026!
+      AUTH_SECRET: ci-only-auth-secret-at-least-32-characters
+      AUTH_URL: http://127.0.0.1:3100
+      NEXT_PUBLIC_APP_URL: http://127.0.0.1:3100
+      NEXT_SERVER_ACTIONS_ENCRYPTION_KEY: ci-only-server-actions-key-at-least-32-chars
+      STORAGE_DRIVER: local
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run db:generate
+      - run: npm run test:db:setup
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run test:coverage
+      - run: npm run test:component
+      - run: npm run test:integration
+      - run: npm run build
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/motobike_shop_test
+      - run: npx playwright install --with-deps chromium firefox
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
