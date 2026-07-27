@@ -41,4 +41,19 @@ describe("checkout form errors", () => {
     expect(useCartStore.getState().items).toHaveLength(1);
     vi.unstubAllGlobals();
   });
+
+  it("shows cities for the selected Uzbekistan region", () => {
+    render(<CheckoutForm />);
+    const city = screen.getByLabelText("Shahar / tuman");
+
+    expect(city).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Viloyat"), {
+      target: { value: "Toshkent shahri" },
+    });
+
+    expect(screen.getByLabelText("Shahar / tuman")).toBeEnabled();
+    expect(
+      screen.getByRole("option", { name: "Chilonzor tumani" }),
+    ).toBeInTheDocument();
+  });
 });

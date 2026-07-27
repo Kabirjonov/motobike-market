@@ -1,3 +1,4 @@
+import { PageMotion } from "@/components/motion/reveal";
 import { AdminBreadcrumbs } from "@/features/admin-shell/breadcrumbs";
 import { AdminSidebar } from "@/features/admin-shell/sidebar";
 import { AdminTopbar } from "@/features/admin-shell/topbar";
@@ -15,7 +16,7 @@ export default async function AdminDashboardLayout({
         <AdminTopbar admin={admin} />
         <main className="px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
           <AdminBreadcrumbs />
-          {children}
+          <PageMotion>{children}</PageMotion>
         </main>
       </div>
     </div>

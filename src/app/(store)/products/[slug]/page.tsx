@@ -4,6 +4,7 @@ import { notFound, permanentRedirect, redirect } from "next/navigation";
 import { connection } from "next/server";
 import { getLocale, getTranslations } from "next-intl/server";
 
+import { Reveal } from "@/components/motion/reveal";
 import { ProductCard } from "@/features/storefront/product-card";
 import { ProductGallery } from "@/features/storefront/product-gallery";
 import { ProductLanguageLinks } from "@/features/storefront/product-language-links";
@@ -235,104 +236,112 @@ export default async function ProductDetailPage(props: Props) {
         <span aria-current="page">{translation.name}</span>
       </nav>
       <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,.85fr)]">
-        <ProductGallery images={images} />
-        <section className="grid gap-6 lg:sticky lg:top-24">
-          <div className="flex items-start justify-between gap-4">
-            <div>
-              <p className="text-primary text-sm font-black uppercase">
-                {product.brand?.name ?? product.type}
-              </p>
-              <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-                {translation.name}
-              </h1>
+        <Reveal direction="right">
+          <ProductGallery images={images} />
+        </Reveal>
+        <Reveal direction="left">
+          <section className="grid gap-6 lg:sticky lg:top-24">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <p className="text-primary text-sm font-black uppercase">
+                  {product.brand?.name ?? product.type}
+                </p>
+                <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
+                  {translation.name}
+                </h1>
+              </div>
+              <ProductLanguageLinks
+                preview={data.preview}
+                translations={product.translations.map(({ locale, slug }) => ({
+                  locale,
+                  slug,
+                }))}
+              />
             </div>
-            <ProductLanguageLinks
-              preview={data.preview}
-              translations={product.translations.map(({ locale, slug }) => ({
-                locale,
-                slug,
-              }))}
+            <div>
+              <p className="text-3xl font-black">{price}</p>
+              {product.compareAtPrice ? (
+                <p className="text-muted-foreground line-through">
+                  {new Intl.NumberFormat(localeCode, {
+                    style: "currency",
+                    currency: product.currency,
+                    maximumFractionDigits: 0,
+                  }).format(Number(product.compareAtPrice))}
+                </p>
+              ) : null}
+            </div>
+            <dl className="grid grid-cols-2 gap-3 rounded-xl border p-4 text-sm">
+              <div>
+                <dt className="text-muted-foreground">SKU</dt>
+                <dd className="font-bold">{product.sku}</dd>
+              </div>
+              <div>
+                <dt className="text-muted-foreground">Mavjudlik</dt>
+                <dd
+                  className={
+                    product.stock > 0
+                      ? "font-bold text-emerald-700 dark:text-emerald-400"
+                      : "text-destructive font-bold"
+                  }
+                >
+                  {product.stock > 0
+                    ? `${product.stock} dona mavjud`
+                    : "Sotuvda yo‘q"}
+                </dd>
+              </div>
+            </dl>
+            <PurchasePanel
+              imageUrl={product.images[0]?.url}
+              name={translation.name}
+              price={product.price}
+              productId={product.id}
+              sku={product.sku}
+              stock={product.stock}
             />
-          </div>
-          <div>
-            <p className="text-3xl font-black">{price}</p>
-            {product.compareAtPrice ? (
-              <p className="text-muted-foreground line-through">
-                {new Intl.NumberFormat(localeCode, {
-                  style: "currency",
-                  currency: product.currency,
-                  maximumFractionDigits: 0,
-                }).format(Number(product.compareAtPrice))}
-              </p>
-            ) : null}
-          </div>
-          <dl className="grid grid-cols-2 gap-3 rounded-xl border p-4 text-sm">
-            <div>
-              <dt className="text-muted-foreground">SKU</dt>
-              <dd className="font-bold">{product.sku}</dd>
-            </div>
-            <div>
-              <dt className="text-muted-foreground">Mavjudlik</dt>
-              <dd
-                className={
-                  product.stock > 0
-                    ? "font-bold text-emerald-700 dark:text-emerald-400"
-                    : "text-destructive font-bold"
-                }
-              >
-                {product.stock > 0
-                  ? `${product.stock} dona mavjud`
-                  : "Sotuvda yo‘q"}
-              </dd>
-            </div>
-          </dl>
-          <PurchasePanel
-            imageUrl={product.images[0]?.url}
-            name={translation.name}
-            price={product.price}
-            productId={product.id}
-            sku={product.sku}
-            stock={product.stock}
-          />
-        </section>
+          </section>
+        </Reveal>
       </div>
       <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_.8fr]">
-        <article>
-          <h2 className="text-2xl font-black">Tavsif</h2>
-          <div className="text-muted-foreground mt-4 leading-8 whitespace-pre-line">
-            {translation.description}
-          </div>
-        </article>
-        <section>
-          <h2 className="text-2xl font-black">Xususiyatlar</h2>
-          <dl className="mt-4 divide-y rounded-xl border">
-            {product.type === ProductType.MOTORCYCLE &&
-            product.motorcycleSpec ? (
-              Object.entries({
-                Marka: product.motorcycleSpec.make,
-                Model: product.motorcycleSpec.model,
-                Yil: product.motorcycleSpec.year,
-                "Dvigatel hajmi": `${product.motorcycleSpec.engineCc} cc`,
-                "Yurgan masofa": `${product.motorcycleSpec.mileageKm.toLocaleString(localeCode)} km`,
-                Holati: product.condition ?? "—",
-              }).map(([label, value]) => (
-                <div className="flex justify-between gap-4 p-3" key={label}>
-                  <dt className="text-muted-foreground">{label}</dt>
-                  <dd className="text-right font-bold">{value}</dd>
-                </div>
-              ))
-            ) : (
-              <>
-                <div className="flex justify-between p-3">
-                  <dt className="text-muted-foreground">Part number</dt>
-                  <dd className="font-bold">
-                    {product.partSpec?.partNumber ?? "—"}
-                  </dd>
-                </div>
-              </>
-            )}
-          </dl>
-        </section>
+        <Reveal direction="right">
+          <article>
+            <h2 className="text-2xl font-black">Tavsif</h2>
+            <div className="text-muted-foreground mt-4 leading-8 whitespace-pre-line">
+              {translation.description}
+            </div>
+          </article>
+        </Reveal>
+        <Reveal direction="left">
+          <section>
+            <h2 className="text-2xl font-black">Xususiyatlar</h2>
+            <dl className="mt-4 divide-y rounded-xl border">
+              {product.type === ProductType.MOTORCYCLE &&
+              product.motorcycleSpec ? (
+                Object.entries({
+                  Marka: product.motorcycleSpec.make,
+                  Model: product.motorcycleSpec.model,
+                  Yil: product.motorcycleSpec.year,
+                  "Dvigatel hajmi": `${product.motorcycleSpec.engineCc} cc`,
+                  "Yurgan masofa": `${product.motorcycleSpec.mileageKm.toLocaleString(localeCode)} km`,
+                  Holati: product.condition ?? "—",
+                }).map(([label, value]) => (
+                  <div className="flex justify-between gap-4 p-3" key={label}>
+                    <dt className="text-muted-foreground">{label}</dt>
+                    <dd className="text-right font-bold">{value}</dd>
+                  </div>
+                ))
+              ) : (
+                <>
+                  <div className="flex justify-between p-3">
+                    <dt className="text-muted-foreground">Part number</dt>
+                    <dd className="font-bold">
+                      {product.partSpec?.partNumber ?? "—"}
+                    </dd>
+                  </div>
+                </>
+              )}
+            </dl>
+          </section>
+        </Reveal>
       </div>
       {product.type === ProductType.PART && product.compatibilities.length ? (
         <section className="mt-12">
@@ -368,22 +377,26 @@ export default async function ProductDetailPage(props: Props) {
         </section>
       ) : null}
       {data.related.length ? (
-        <section className="mt-16">
-          <div className="mb-6 flex justify-between">
-            <h2 className="text-2xl font-black">O‘xshash mahsulotlar</h2>
-            <Link
-              className="font-bold hover:underline"
-              href={`/catalog?category=${selected(product.category.translations, Locale.UZ)?.slug}`}
-            >
-              Barchasi
-            </Link>
-          </div>
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-            {data.related.map((item) => (
-              <ProductCard key={item.id} product={item} />
-            ))}
-          </div>
-        </section>
+        <Reveal className="mt-16">
+          <section>
+            <div className="mb-6 flex justify-between">
+              <h2 className="text-2xl font-black">O‘xshash mahsulotlar</h2>
+              <Link
+                className="font-bold hover:underline"
+                href={`/catalog?category=${selected(product.category.translations, Locale.UZ)?.slug}`}
+              >
+                Barchasi
+              </Link>
+            </div>
+            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+              {data.related.map((item, index) => (
+                <Reveal delay={index * 0.07} key={item.id}>
+                  <ProductCard product={item} />
+                </Reveal>
+              ))}
+            </div>
+          </section>
+        </Reveal>
       ) : null}
     </div>
   );

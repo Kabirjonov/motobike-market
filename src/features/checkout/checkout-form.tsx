@@ -8,6 +8,11 @@ import { Button, buttonVariants } from "@/components/ui/button";
 import { calculateStoredCartSubtotal } from "@/features/cart/cart-summary";
 import { formatDecimalMoney } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
+import {
+  uzbekistanLocations,
+  type UzbekistanRegion,
+  uzbekistanRegions,
+} from "@/lib/uzbekistan-locations";
 import { useCartStore } from "@/stores/cart-store";
 
 const control =
@@ -20,6 +25,7 @@ export function CheckoutForm() {
   const [pending, setPending] = useState(false);
   const [error, setError] = useState("");
   const [delivery, setDelivery] = useState<"COURIER" | "PICKUP">("COURIER");
+  const [region, setRegion] = useState<UzbekistanRegion | "">("");
   if (!items.length)
     return (
       <div className="container grid min-h-[65vh] place-items-center text-center">
@@ -117,11 +123,47 @@ export function CheckoutForm() {
             <div className="grid gap-4 sm:grid-cols-2">
               <label className="grid gap-1 text-sm font-bold">
                 Viloyat
-                <input className={control} name="region" required />
+                <select
+                  className={control}
+                  name="region"
+                  onChange={(event) =>
+                    setRegion(event.target.value as UzbekistanRegion | "")
+                  }
+                  required
+                  value={region}
+                >
+                  <option disabled value="">
+                    Viloyatni tanlang
+                  </option>
+                  {uzbekistanRegions.map((item) => (
+                    <option key={item} value={item}>
+                      {item}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="grid gap-1 text-sm font-bold">
-                Shahar
-                <input className={control} name="city" required />
+                Shahar / tuman
+                <select
+                  className={control}
+                  disabled={!region}
+                  key={region}
+                  name="city"
+                  required
+                >
+                  <option disabled value="">
+                    {region
+                      ? "Shahar yoki tumanni tanlang"
+                      : "Avval viloyatni tanlang"}
+                  </option>
+                  {region
+                    ? uzbekistanLocations[region].map((item) => (
+                        <option key={item} value={item}>
+                          {item}
+                        </option>
+                      ))
+                    : null}
+                </select>
               </label>
             </div>
             <label className="grid gap-1 text-sm font-bold">

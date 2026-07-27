@@ -39,8 +39,8 @@ test("browse to cart and complete guest checkout", async ({
   await page.getByRole("link", { name: "Checkout" }).click();
   await page.getByLabel("Ism").fill("Playwright Buyer");
   await page.getByLabel("Telefon").fill("+998901112233");
-  await page.getByLabel("Viloyat").fill("Toshkent");
-  await page.getByLabel("Shahar").fill("Toshkent");
+  await page.getByLabel("Viloyat").selectOption("Toshkent shahri");
+  await page.getByLabel("Shahar / tuman").selectOption("Chilonzor tumani");
   await page.getByLabel("Manzil").fill("QA ko‘chasi 1");
   await page.getByRole("button", { name: "Buyurtma berish" }).click();
   await expect(page).toHaveURL(/\/uz\/order-success\/MB-/);

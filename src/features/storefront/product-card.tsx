@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Bike, PackageCheck, PackageX } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -32,7 +33,12 @@ export function ProductCard({ product }: { product: StorefrontProductCard }) {
   const translation = translated(product.translations, locale);
   const image = product.images[0];
   return (
-    <article className="bg-card border-border group overflow-hidden rounded-2xl border shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg">
+    <motion.article
+      className="bg-card border-border group overflow-hidden rounded-2xl border shadow-sm"
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      whileHover={{ scale: 1.018, y: -5 }}
+      whileTap={{ scale: 0.99 }}
+    >
       <Link
         className="focus-visible:ring-ring block rounded-2xl outline-none focus-visible:ring-2"
         href={`/${locale.toLowerCase()}/products/${translation?.slug ?? product.sku}`}
@@ -109,6 +115,6 @@ export function ProductCard({ product }: { product: StorefrontProductCard }) {
           </div>
         </div>
       </Link>
-    </article>
+    </motion.article>
   );
 }

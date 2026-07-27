@@ -1,5 +1,6 @@
 import Link from "next/link";
 
+import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { StorefrontCatalogQuery } from "@/schemas/storefront-catalog";
@@ -36,8 +37,10 @@ export function CatalogResults({
       </div>
       {items.length ? (
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
-          {items.map((item) => (
-            <ProductCard key={item.id} product={item} />
+          {items.map((item, index) => (
+            <Reveal delay={(index % 6) * 0.055} key={item.id}>
+              <ProductCard product={item} />
+            </Reveal>
           ))}
         </div>
       ) : (

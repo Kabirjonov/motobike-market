@@ -1,3 +1,4 @@
+import { PageMotion } from "@/components/motion/reveal";
 import { PublicFooter } from "@/components/shared/public-footer";
 import { PublicHeader } from "@/components/shared/public-header";
 
@@ -7,7 +8,9 @@ export default function StoreLayout({
   return (
     <div className="flex min-h-screen flex-col">
       <PublicHeader />
-      <main className="flex-1">{children}</main>
+      <main className="flex-1">
+        <PageMotion>{children}</PageMotion>
+      </main>
       <PublicFooter />
     </div>
   );

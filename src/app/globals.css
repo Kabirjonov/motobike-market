@@ -103,3 +103,88 @@
     padding-inline: 2rem;
   }
 }
+
+.home-hero {
+  position: relative;
+  background-color: #0d1012;
+}
+
+.home-hero::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(
+    90deg,
+    rgb(8 10 12 / 0.72) 0%,
+    rgb(8 10 12 / 0.14) 54%,
+    transparent 78%
+  );
+  pointer-events: none;
+}
+
+.home-hero-slide {
+  position: absolute;
+  inset: 0;
+  background-position: center;
+  background-size: cover;
+  transition: opacity 900ms ease-in-out;
+}
+
+@keyframes hero-copy-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-hero-copy {
+  animation: hero-copy-in 500ms ease-out both;
+}
+
+.home-product-sprite {
+  width: 100%;
+  height: 100%;
+  background-image: url("/home/product-strip.png");
+  background-repeat: no-repeat;
+  background-size: 600% 100%;
+}
+
+.home-editorial {
+  background:
+    linear-gradient(90deg, rgb(9 12 14 / 0.98), rgb(9 12 14 / 0.7)),
+    url("/home/hero-superbike.png") center 58% / cover;
+}
+
+@media (width < 48rem) {
+  .home-hero {
+    min-height: 430px;
+  }
+
+  .home-hero-slide {
+    background-position: 62% center;
+  }
+
+  .home-hero::after {
+    background: linear-gradient(
+      90deg,
+      rgb(8 10 12 / 0.95) 0%,
+      rgb(8 10 12 / 0.72) 58%,
+      rgb(8 10 12 / 0.25) 100%
+    );
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-hero-slide {
+    transition: none;
+  }
+
+  .animate-hero-copy {
+    animation: none;
+  }
+}
