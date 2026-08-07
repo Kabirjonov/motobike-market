@@ -2,27 +2,83 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
-import { useTransition } from "react";
+import { useEffect, useTransition } from "react";
 
-import { type AppLocale, localePath } from "@/i18n/routing";
+import { type AppLocale, isAppLocale, localePath } from "@/i18n/routing";
+
+function persistLocaleCookie(locale: AppLocale) {
+  document.cookie = `NEXT_LOCALE=${locale}; Path=/; Max-Age=31536000; SameSite=Lax`;
+}
 
 export function StoreLocaleSwitcher({
   localizedPaths,
+  variant = "select",
 }: {
   localizedPaths?: Partial<Record<AppLocale, string>>;
+  variant?: "buttons" | "compact" | "select";
 }) {
   const locale = useLocale() as AppLocale;
   const pathname = usePathname();
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const t = useTranslations("locale");
+  useEffect(() => {
+    const saved = localStorage.getItem("locale");
+    if (!saved || !isAppLocale(saved) || saved === locale) return;
+    persistLocaleCookie(saved);
+    startTransition(() => router.refresh());
+  }, [locale, router]);
   function update(next: AppLocale) {
     localStorage.setItem("locale", next);
-    document.cookie = `NEXT_LOCALE=${next}; Path=/; Max-Age=31536000; SameSite=Lax`;
-    startTransition(() =>
-      router.replace(localizedPaths?.[next] ?? localePath(next, pathname)),
-    );
+    persistLocaleCookie(next);
+    startTransition(() => {
+      const target = localizedPaths?.[next] ?? localePath(next, pathname);
+      if (target !== pathname) router.replace(target);
+      router.refresh();
+    });
   }
+  if (variant === "compact")
+    return (
+      <div
+        aria-label={t("label")}
+        className="flex items-center gap-3"
+        role="group"
+      >
+        {(["uz", "ru", "en"] as const).map((item) => (
+          <button
+            aria-pressed={item === locale}
+            className={
+              item === locale
+                ? "border-b-2 border-red-600 py-2 text-white"
+                : "py-2 text-white/55 hover:text-white"
+            }
+            disabled={pending}
+            key={item}
+            onClick={() => update(item)}
+            type="button"
+          >
+            {item.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    );
+  if (variant === "buttons")
+    return (
+      <div aria-label={t("label")} className="flex gap-1" role="group">
+        {(["uz", "ru", "en"] as const).map((item) => (
+          <button
+            aria-pressed={item === locale}
+            className="aria-pressed:bg-primary aria-pressed:text-primary-foreground rounded-md border px-2 py-1 text-xs font-bold"
+            disabled={pending || !localizedPaths?.[item]}
+            key={item}
+            onClick={() => update(item)}
+            type="button"
+          >
+            {item.toUpperCase()}
+          </button>
+        ))}
+      </div>
+    );
   return (
     <label>
       <span className="sr-only">{t("label")}</span>

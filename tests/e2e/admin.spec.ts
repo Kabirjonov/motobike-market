@@ -7,13 +7,13 @@ test("admin login, draft product CRUD and order transition", async ({
     testInfo.project.name !== "chromium",
     "Stateful admin flow runs once",
   );
-  await page.goto("/uz/admin/login");
+  await page.goto("/admin/login");
   await page.getByLabel("Email").fill(process.env.SEED_ADMIN_EMAIL!);
   await page.getByLabel("Parol").fill(process.env.SEED_ADMIN_PASSWORD!);
   await page.getByRole("button", { name: "Admin panelga kirish" }).click();
   await expect(page).toHaveURL(/\/(?:uz\/)?admin$/);
 
-  await page.goto("/uz/admin/products/new");
+  await page.goto("/admin/products/new");
   await page.getByLabel("SKU").fill("E2E-DRAFT-001");
   await page.getByLabel("Mahsulot turi").selectOption("ACCESSORY");
   await page.getByLabel("Kategoriya").selectOption({ index: 1 });
@@ -35,7 +35,7 @@ test("admin login, draft product CRUD and order transition", async ({
   await page.getByRole("button", { name: "Mahsulotni saqlash" }).click();
   await expect(page.getByRole("status")).toContainText("Mahsulot saqlandi");
 
-  await page.goto("/uz/admin/orders");
+  await page.goto("/admin/orders");
   await page.getByRole("link", { name: "QA-E2E-ORDER" }).click();
   await page.getByLabel("Yangi status").selectOption("CONFIRMED");
   await page.getByLabel("Audit izohi").fill("Confirmed by Playwright QA");

@@ -75,6 +75,7 @@ async function EditProductContent({ params, searchParams }: Props) {
           type: product.type,
           status: product.status,
           condition: product.condition,
+          color: product.color,
           categoryId: product.categoryId,
           brandId: product.brandId,
           price: product.price.toString(),

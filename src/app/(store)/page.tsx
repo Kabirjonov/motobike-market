@@ -17,6 +17,7 @@ import { getLocale } from "next-intl/server";
 
 import { Reveal } from "@/components/motion/reveal";
 import { HomeHeroCarousel } from "@/features/storefront/home-hero-carousel";
+import { HomeProductCarousel } from "@/features/storefront/home-product-carousel";
 import { absoluteUrl, localizedMetadata, serializeJsonLd } from "@/lib/seo";
 import { getHomeCatalog } from "@/server/repositories/storefront-catalog";
 
@@ -41,15 +42,6 @@ export async function generateMetadata(): Promise<Metadata> {
   return localizedMetadata({ locale, ...homeSeo[locale] });
 }
 
-const displayProducts = [
-  ["LS2 FF353 Rapid", "Shox Helmet", "1 450 000 so‘m"],
-  ["Alpinestars SP-8", "V3 Gloves", "950 000 so‘m"],
-  ["Akrapovič GP", "Slip-On Exhaust", "8 750 000 so‘m"],
-  ["DID VX3 530", "Chain & Sprocket Kit", "1 250 000 so‘m"],
-  ["Dainese Laguna", "Seca Jacket", "2 950 000 so‘m"],
-  ["Michelin Pilot Power", "2CT Tire", "1 650 000 so‘m"],
-] as const;
-
 const trustItems = [
   [ShieldCheck, "100% ishonchli to‘lov", "Xavfsiz va qulay"],
   [BadgeCheck, "Rasmiy brendlar", "Original mahsulotlar"],
@@ -69,7 +61,8 @@ function Sprite({ index }: { index: number }) {
 
 export default async function HomePage() {
   await connection();
-  const { categories, featured } = await getHomeCatalog();
+  const { categories, motorcycles, parts, gear, accessories } = await getHomeCatalog();
+  const allFeatured = [...motorcycles, ...parts, ...gear, ...accessories];
   const locale = (await getLocale()) as "uz" | "ru" | "en";
   const localeEnum = locale.toUpperCase();
   const categoryFallbacks = [
@@ -83,17 +76,17 @@ export default async function HomePage() {
       "@context": "https://schema.org",
       "@type": "Organization",
       name: "Motobike Market",
-      url: absoluteUrl(`/${locale}`),
+      url: absoluteUrl("/"),
     },
     {
       "@context": "https://schema.org",
       "@type": "WebSite",
       name: "Motobike Market",
-      url: absoluteUrl(`/${locale}`),
+      url: absoluteUrl("/"),
       inLanguage: locale,
       potentialAction: {
         "@type": "SearchAction",
-        target: `${absoluteUrl(`/${locale}/catalog`)}?q={search_term_string}`,
+        target: `${absoluteUrl("/catalog")}?q={search_term_string}`,
         "query-input": "required name=search_term_string",
       },
     },
@@ -106,7 +99,7 @@ export default async function HomePage() {
         type="application/ld+json"
       />
 
-      <HomeHeroCarousel locale={locale} />
+      <HomeHeroCarousel />
 
       <div className="relative z-20 container -mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         {categoryFallbacks.map(([fallbackName, subtitle], index) => {
@@ -128,8 +121,8 @@ export default async function HomePage() {
                 className="group relative flex h-28 overflow-hidden rounded-md border border-zinc-200 bg-white px-5 py-4 shadow-sm transition-shadow hover:shadow-lg"
                 href={
                   category
-                    ? `/${locale}/categories/${translation?.slug ?? uz?.slug}`
-                    : `/${locale}/catalog`
+                    ? `/categories/${translation?.slug ?? uz?.slug}`
+                    : "/catalog"
                 }
               >
                 <div className="relative z-10 max-w-[55%]">
@@ -149,72 +142,33 @@ export default async function HomePage() {
         })}
       </div>
 
-      <section className="container py-6">
-        <Reveal>
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-xl font-extrabold">Ommabop mahsulotlar</h2>
-            <Link
-              className="flex items-center gap-1 text-xs text-zinc-500 hover:text-red-600"
-              href={`/${locale}/catalog`}
-            >
-              Barchasini ko‘rish <ArrowRight className="size-3" />
-            </Link>
-          </div>
-        </Reveal>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-          {displayProducts.map(([name, subtitle, price], index) => {
-            const dbProduct = featured[index];
-            const dbTranslation = dbProduct?.translations.find(
-              (item) => item.locale === localeEnum,
-            );
-            const href = dbProduct
-              ? `/${locale}/products/${dbTranslation?.slug ?? dbProduct.sku}`
-              : `/${locale}/catalog`;
-            return (
-              <Reveal className="h-full" delay={index * 0.055} key={name}>
-                <article className="group relative h-full overflow-hidden rounded-md border border-zinc-200 bg-white transition duration-300 hover:-translate-y-1 hover:shadow-xl">
-                  <button
-                    aria-label={`${name} sevimlilarga qo‘shish`}
-                    className="absolute top-2 right-2 z-10 text-zinc-600 transition hover:scale-125 hover:text-red-600"
-                    type="button"
-                  >
-                    <Heart className="size-4" />
-                  </button>
-                  <Link className="block" href={href}>
-                    <div className="h-32 p-2 transition duration-500 group-hover:scale-105">
-                      <Sprite index={index} />
-                    </div>
-                    <div className="min-h-24 px-3 pb-3 text-xs">
-                      <h3 className="font-medium">
-                        {dbTranslation?.name ?? name}
-                      </h3>
-                      <p className="text-zinc-500">{subtitle}</p>
-                      <strong className="mt-1 block text-[13px]">
-                        {price}
-                      </strong>
-                    </div>
-                  </Link>
-                  <Link
-                    aria-label={`${name} savatga qo‘shish`}
-                    className="absolute right-3 bottom-3 grid size-8 place-items-center rounded border border-red-500 text-red-600 transition hover:scale-110 hover:bg-red-600 hover:text-white"
-                    href={href}
-                  >
-                    <ShoppingCart className="size-4" />
-                  </Link>
-                </article>
-              </Reveal>
-            );
-          })}
-        </div>
-        <div className="mt-3 flex justify-center gap-1.5">
-          {[0, 1, 2, 3, 4, 5].map((dot) => (
-            <span
-              className={`size-1.5 rounded-full ${dot === 0 ? "bg-red-600" : "bg-zinc-200"}`}
-              key={dot}
-            />
-          ))}
-        </div>
-      </section>
+      {/* 1. Ommabop mahsulotlar Carousel */}
+      <HomeProductCarousel
+        title="Ommabop mahsulotlar"
+        viewAllLink="/catalog"
+        products={allFeatured}
+      />
+
+      {/* 2. Tavsiya etilgan mototsikllar Carousel */}
+      <HomeProductCarousel
+        title="Tavsiya etilgan mototsikllar"
+        viewAllLink="/catalog?type=MOTORCYCLE"
+        products={motorcycles}
+      />
+
+      {/* 3. Moylar va ehtiyot qismlar Carousel */}
+      <HomeProductCarousel
+        title="Moylar va ehtiyot qismlar"
+        viewAllLink="/catalog?type=PART"
+        products={parts}
+      />
+
+      {/* 4. Ekipirovka va aksessuarlar Carousel */}
+      <HomeProductCarousel
+        title="Ekipirovka va aksessuarlar"
+        viewAllLink="/catalog?type=GEAR"
+        products={[...gear, ...accessories]}
+      />
 
       <section className="container grid gap-4 pb-7 lg:grid-cols-[1.15fr_0.95fr]">
         <Reveal direction="right">
@@ -247,7 +201,7 @@ export default async function HomePage() {
             </p>
             <Link
               className="mt-3 inline-flex items-center gap-2 rounded border border-white/60 px-3 py-1 text-[10px] transition hover:bg-white hover:text-black"
-              href={`/${locale}/catalog`}
+              href="/catalog"
             >
               Maqolani o‘qish <ArrowRight className="size-3" />
             </Link>

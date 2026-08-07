@@ -1,6 +1,6 @@
 import { NextIntlClientProvider } from "next-intl";
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   formatStorefrontPrice,
@@ -10,6 +10,12 @@ import { ProductGallery } from "@/features/storefront/product-gallery";
 import { ProductLanguageLinks } from "@/features/storefront/product-language-links";
 import { ProductType } from "@/generated/prisma/enums";
 import messages from "@/messages/uz.json";
+
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/products/honda",
+  useRouter: () => ({ refresh: vi.fn(), replace: vi.fn() }),
+}));
+
 const product = {
   id: "p1",
   sku: "HON-01",
@@ -52,7 +58,7 @@ describe("public storefront UI", () => {
       </NextIntlClientProvider>,
     );
     expect(html).toContain("Honda CB500X");
-    expect(html).toContain("/uz/products/honda-cb500x");
+    expect(html).toContain("/products/honda-cb500x");
     expect(html).toContain('width="1200"');
     expect(html).toContain("Honda mototsikli");
   });
@@ -89,7 +95,7 @@ describe("public storefront UI", () => {
       </NextIntlClientProvider>,
     );
     expect(html).toContain('aria-label="Mahsulot rasmlari"');
-    expect(html).toContain("/ru/products/honda-ru");
+    expect(html).toContain(">RU</button>");
     expect(html).toContain("Honda old tomoni");
   });
 });

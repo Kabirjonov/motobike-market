@@ -16,6 +16,7 @@ const detailSelect = {
   type: true,
   status: true,
   condition: true,
+  color: true,
   price: true,
   compareAtPrice: true,
   currency: true,

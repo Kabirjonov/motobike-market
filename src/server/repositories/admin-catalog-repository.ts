@@ -135,6 +135,7 @@ export async function saveAdminProduct(input: ProductInput, id?: string) {
     const common = {
       brandId: input.brandId ?? null,
       categoryId: input.categoryId,
+      color: input.color ?? null,
       compareAtPrice: input.compareAtPrice ?? null,
       condition: input.condition ?? null,
       isFeatured: input.isFeatured,
@@ -168,16 +169,15 @@ export async function saveAdminProduct(input: ProductInput, id?: string) {
         (item) => item.locale === previous.locale,
       );
       if (next && next.slug !== previous.slug) {
-        const locale = previous.locale.toLowerCase();
         await tx.redirect.upsert({
-          where: { sourcePath: `/${locale}/products/${previous.slug}` },
+          where: { sourcePath: `/products/${previous.slug}` },
           create: {
-            sourcePath: `/${locale}/products/${previous.slug}`,
-            destinationPath: `/${locale}/products/${next.slug}`,
+            sourcePath: `/products/${previous.slug}`,
+            destinationPath: `/products/${next.slug}`,
             statusCode: RedirectStatusCode.MOVED_PERMANENTLY,
           },
           update: {
-            destinationPath: `/${locale}/products/${next.slug}`,
+            destinationPath: `/products/${next.slug}`,
             statusCode: RedirectStatusCode.MOVED_PERMANENTLY,
             isActive: true,
             expiresAt: null,

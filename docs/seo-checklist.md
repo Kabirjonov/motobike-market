@@ -4,7 +4,7 @@
 
 - `NEXT_PUBLIC_APP_URL` production HTTPS originiga teng va trailing path yo‘q.
 - `/robots.txt` va `/sitemap.xml` production origin bilan javob beradi.
-- `/uz`, `/ru`, `/en` canonical va `hreflang` (`x-default` bilan) reciprocal.
+- URL prefixsiz yagona canonical ishlatiladi; faqat default `uz` indekslanadi.
 - Active product/category/brand URL’lari sitemapda; draft, archived, admin, cart va checkout yo‘q.
 - Filterlangan katalog `noindex,follow`; canonical locale katalogning querysiz URL’i.
 - Product JSON-LD Google Rich Results Test’da `Product` va `Offer` sifatida taniladi; rating faqat haqiqiy DB ma’lumoti bo‘lsa qo‘shiladi.

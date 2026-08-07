@@ -4,6 +4,7 @@ import { useActionState, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
+  ProductColor,
   ProductCondition,
   ProductStatus,
   ProductType,
@@ -22,6 +23,7 @@ export type ProductFormValue = {
   categoryId?: string;
   compareAtPrice?: string | null;
   condition?: ProductCondition | null;
+  color?: ProductColor | null;
   id?: string;
   isFeatured?: boolean;
   motorcycle?: {
@@ -107,6 +109,12 @@ export function ProductForm({
           >
             <option value="">Tanlanmagan</option>
             {Object.values(ProductCondition).map((item) => (
+              <option key={item}>{item}</option>
+            ))}
+          </SelectField>
+          <SelectField defaultValue={value.color ?? ""} label="Rang" name="color">
+            <option value="">Tanlanmagan</option>
+            {Object.values(ProductColor).map((item) => (
               <option key={item}>{item}</option>
             ))}
           </SelectField>

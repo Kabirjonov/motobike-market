@@ -11,7 +11,7 @@
 
 - Targets at p75 mobile: LCP ≤2.5s, INP ≤200ms, CLS ≤0.1, TTFB ≤800ms.
 - Record field Web Vitals with a privacy-safe analytics endpoint: metric name, value, rating, route template, locale and build ID only. Do not send URLs containing order numbers or customer input.
-- Run Lighthouse mobile against `/uz`, `/uz/catalog`, a representative product, cart and checkout on every release candidate. Compare bundle output and route rendering mode from `next build`.
+- Run Lighthouse mobile against `/`, `/catalog`, a representative product, cart and checkout on every release candidate. Compare bundle output and route rendering mode from `next build`.
 - Use PostgreSQL `EXPLAIN (ANALYZE, BUFFERS)` with anonymized representative filters before adding indexes. Monitor slow-query percentiles and cache hit rates in production.
 
 ## Scaling actions

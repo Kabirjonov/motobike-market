@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useLocale } from "next-intl";
 
+import { FavoriteButton } from "@/features/wishlist/favorite-button";
 import type { StorefrontProductCard } from "@/server/repositories/storefront-catalog";
 
 function translated<T extends { locale: string }>(values: T[], locale: string) {
@@ -34,14 +35,36 @@ export function ProductCard({ product }: { product: StorefrontProductCard }) {
   const image = product.images[0];
   return (
     <motion.article
-      className="bg-card border-border group overflow-hidden rounded-2xl border shadow-sm"
+      className="bg-card border-border group relative overflow-hidden rounded-2xl border shadow-sm"
       transition={{ duration: 0.25, ease: "easeOut" }}
       whileHover={{ scale: 1.018, y: -5 }}
       whileTap={{ scale: 0.99 }}
     >
+      <FavoriteButton
+        className="absolute top-3 right-3 z-10"
+        item={{
+          currency: product.currency,
+          imageAlt:
+            (locale === "RU"
+              ? image?.altRu
+              : locale === "EN"
+                ? image?.altEn
+                : image?.altUz) ??
+            image?.altUz ??
+            translation?.name ??
+            product.sku,
+          imageUrl: image?.url,
+          name: translation?.name ?? product.sku,
+          price: product.price.toString(),
+          productId: product.id,
+          sku: product.sku,
+          slug: translation?.slug ?? product.sku,
+          stock: product.stock,
+        }}
+      />
       <Link
         className="focus-visible:ring-ring block rounded-2xl outline-none focus-visible:ring-2"
-        href={`/${locale.toLowerCase()}/products/${translation?.slug ?? product.sku}`}
+        href={`/products/${translation?.slug ?? product.sku}`}
       >
         <div className="bg-muted relative aspect-[4/3] overflow-hidden">
           {image ? (

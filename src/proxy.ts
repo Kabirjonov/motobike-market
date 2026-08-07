@@ -16,57 +16,50 @@ function secure(response: NextResponse) {
 export default auth(async (request) => {
   const { pathname, search } = request.nextUrl;
   const segments = pathname.split("/").filter(Boolean);
-  const locale = segments[0];
+  const prefix = segments[0];
 
-  if (!isAppLocale(locale ?? "")) {
-    const saved = request.cookies.get("NEXT_LOCALE")?.value;
-    const targetLocale = isAppLocale(saved ?? "") ? saved : "uz";
-    return secure(
-      NextResponse.redirect(
-        new URL(
-          `/${targetLocale}${pathname === "/" ? "" : pathname}${search}`,
-          request.url,
-        ),
-      ),
+  if (isAppLocale(prefix ?? "")) {
+    const cleanPath = `/${segments.slice(1).join("/")}`;
+    const response = NextResponse.redirect(
+      new URL(`${cleanPath === "/" ? "/" : cleanPath}${search}`, request.url),
     );
+    response.cookies.set("NEXT_LOCALE", prefix, {
+      path: "/",
+      sameSite: "lax",
+      maxAge: 31_536_000,
+    });
+    return secure(response);
   }
 
-  const internalPath = `/${segments.slice(1).join("/")}`;
-  if (internalPath.startsWith("/products/")) {
+  const saved = request.cookies.get("NEXT_LOCALE")?.value;
+  const locale = saved && isAppLocale(saved) ? saved : "uz";
+  if (pathname.startsWith("/products/")) {
     const legacy = await findActiveRedirect(pathname);
     if (legacy?.destinationPath.startsWith("/")) {
+      const destination =
+        legacy.destinationPath.replace(/^\/(uz|ru|en)(?=\/|$)/, "") || "/";
       return secure(
-        NextResponse.redirect(
-          new URL(legacy.destinationPath, request.url),
-          301,
-        ),
+        NextResponse.redirect(new URL(destination, request.url), 301),
       );
     }
   }
-  const isAdmin =
-    internalPath === "/admin" || internalPath.startsWith("/admin/");
-  const isLogin = internalPath === "/admin/login";
+  const isAdmin = pathname === "/admin" || pathname.startsWith("/admin/");
+  const isLogin = pathname === "/admin/login";
   if (isAdmin && !request.auth && !isLogin) {
-    const login = new URL(`/${locale}/admin/login`, request.url);
+    const login = new URL("/admin/login", request.url);
     login.searchParams.set("redirectTo", `${pathname}${search}`);
     return secure(NextResponse.redirect(login));
   }
   if (isAdmin && request.auth && isLogin)
-    return secure(
-      NextResponse.redirect(new URL(`/${locale}/admin`, request.url)),
-    );
+    return secure(NextResponse.redirect(new URL("/admin", request.url)));
 
-  const url = request.nextUrl.clone();
-  url.pathname = internalPath;
   const headers = new Headers(request.headers);
   headers.set("x-motobike-locale", locale);
-  const response = NextResponse.rewrite(url, { request: { headers } });
-  response.cookies.set("NEXT_LOCALE", locale, {
-    path: "/",
-    sameSite: "lax",
-    maxAge: 31_536_000,
-  });
-  return secure(response);
+  return secure(
+    NextResponse.next({
+      request: { headers },
+    }),
+  );
 });
 
 export const config = {

@@ -2,6 +2,7 @@ import { z } from "zod";
 
 import {
   Locale,
+  ProductColor,
   ProductCondition,
   ProductStatus,
   ProductType,
@@ -78,6 +79,7 @@ export const productInputSchema = z
     type: z.enum(ProductType),
     status: z.enum(ProductStatus),
     condition: z.enum(ProductCondition).optional(),
+    color: z.enum(ProductColor).optional(),
     categoryId: z.string().min(1, "Kategoriya majburiy"),
     brandId: optionalId,
     price: money,
@@ -209,6 +211,7 @@ export function productFromFormData(data: FormData) {
     type: value(data, "type"),
     status: value(data, "status"),
     condition: value(data, "condition") || undefined,
+    color: value(data, "color") || undefined,
     categoryId: value(data, "categoryId"),
     brandId: value(data, "brandId"),
     price: value(data, "price"),

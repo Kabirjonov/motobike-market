@@ -3,20 +3,8 @@ import type { Metadata } from "next";
 import type { AppLocale } from "@/i18n/routing";
 import { publicEnv } from "@/lib/env/public";
 
-export const locales = ["uz", "ru", "en"] as const;
-
 export function absoluteUrl(path: string) {
   return new URL(path, publicEnv.NEXT_PUBLIC_APP_URL).toString();
-}
-
-export function localeAlternates(path = "") {
-  const normalized = path ? `/${path.replace(/^\//, "")}` : "";
-  return {
-    uz: absoluteUrl(`/uz${normalized}`),
-    ru: absoluteUrl(`/ru${normalized}`),
-    en: absoluteUrl(`/en${normalized}`),
-    "x-default": absoluteUrl(`/uz${normalized}`),
-  };
 }
 
 export function localizedMetadata(input: {
@@ -28,11 +16,11 @@ export function localizedMetadata(input: {
   noindex?: boolean;
 }): Metadata {
   const path = input.path ? `/${input.path.replace(/^\//, "")}` : "";
-  const url = absoluteUrl(`/${input.locale}${path}`);
+  const url = absoluteUrl(path || "/");
   return {
     title: input.title,
     description: input.description,
-    alternates: { canonical: url, languages: localeAlternates(path) },
+    alternates: { canonical: url },
     robots: input.noindex
       ? { index: false, follow: true }
       : { index: true, follow: true },

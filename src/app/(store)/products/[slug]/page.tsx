@@ -1,3 +1,15 @@
+import {
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  CreditCard,
+  Home,
+  MapPin,
+  Package,
+  RotateCcw,
+  ShieldCheck,
+  Truck,
+} from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect, redirect } from "next/navigation";
@@ -7,9 +19,15 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { Reveal } from "@/components/motion/reveal";
 import { ProductCard } from "@/features/storefront/product-card";
 import { ProductGallery } from "@/features/storefront/product-gallery";
-import { ProductLanguageLinks } from "@/features/storefront/product-language-links";
+import { InteractiveTabsSection } from "@/features/storefront/product-details-client";
 import { PurchasePanel } from "@/features/storefront/purchase-panel";
-import { Locale, ProductStatus, ProductType } from "@/generated/prisma/enums";
+import { SimilarProductsCarousel } from "@/features/storefront/similar-products-carousel";
+import {
+  Locale,
+  ProductColor,
+  ProductStatus,
+  ProductType,
+} from "@/generated/prisma/enums";
 import {
   absoluteUrl,
   breadcrumbJsonLd,
@@ -31,6 +49,7 @@ type Props = {
   params: Promise<{ slug: string }>;
   searchParams: Promise<{ lang?: string; preview?: string }>;
 };
+
 async function load(props: Props) {
   const params = productDetailParamsSchema.safeParse(await props.params);
   const locale = await getLocale();
@@ -49,7 +68,7 @@ async function load(props: Props) {
   }
   const result = await getPublicProductDetail(params.data.slug, query.lang);
   if (result) return { ...result, preview: false };
-  const oldPath = `/${query.lang}/products/${params.data.slug}`;
+  const oldPath = `/products/${params.data.slug}`;
   const legacy = await findActiveRedirect(oldPath);
   if (legacy) {
     if (legacy.statusCode === "TEMPORARY_REDIRECT")
@@ -58,6 +77,7 @@ async function load(props: Props) {
   }
   return null;
 }
+
 function selected<T extends { locale: Locale }>(
   translations: T[],
   locale: Locale,
@@ -68,17 +88,34 @@ function selected<T extends { locale: Locale }>(
     translations[0]
   );
 }
-function languageUrls(translations: { locale: Locale; slug: string }[]) {
-  const languages = Object.fromEntries(
-    translations.map((item) => {
-      const lang = item.locale.toLowerCase();
-      return [lang, `/${lang}/products/${item.slug}`];
-    }),
-  );
-  const uz = translations.find((item) => item.locale === Locale.UZ);
-  if (uz) languages["x-default"] = `/uz/products/${uz.slug}`;
-  return languages;
+
+function conditionLabel(condition: string | null) {
+  if (!condition) return "—";
+  return condition === "NEW"
+    ? "Yangi"
+    : condition === "USED"
+      ? "Ishlatilgan"
+      : condition;
 }
+
+const colorMeta: Record<ProductColor, { className: string; label: string }> = {
+  BLACK: { className: "bg-neutral-950", label: "Qora" },
+  BLUE: { className: "bg-blue-700", label: "Moviy" },
+  BROWN: { className: "bg-amber-900", label: "Jigarrang" },
+  GOLD: { className: "bg-yellow-500", label: "Tilla" },
+  GRAY: { className: "bg-neutral-500", label: "Kulrang" },
+  GREEN: { className: "bg-emerald-600", label: "Yashil" },
+  MULTICOLOR: {
+    className:
+      "bg-[conic-gradient(#dc2626,#2563eb,#16a34a,#facc15,#dc2626)]",
+    label: "Ko‘p rangli",
+  },
+  ORANGE: { className: "bg-orange-500", label: "Olovrang" },
+  RED: { className: "bg-red-600", label: "Qizil" },
+  SILVER: { className: "bg-zinc-300", label: "Kumush" },
+  WHITE: { className: "bg-white", label: "Oq" },
+  YELLOW: { className: "bg-yellow-300", label: "Sariq" },
+};
 
 export async function generateMetadata(props: Props): Promise<Metadata> {
   const data = await load(props);
@@ -88,15 +125,12 @@ export async function generateMetadata(props: Props): Promise<Metadata> {
       robots: { index: false, follow: false },
     };
   const translation = selected(data.product.translations, data.requestedLocale);
-  const canonical = `/${data.requestedLocale.toLowerCase()}/products/${translation?.slug}`;
+  const canonical = `/products/${translation?.slug}`;
   return {
     title: translation?.seoTitle || translation?.name,
     description:
       translation?.seoDescription || translation?.description.slice(0, 160),
-    alternates: {
-      canonical,
-      languages: languageUrls(data.product.translations),
-    },
+    alternates: { canonical },
     robots:
       data.preview || data.product.status !== ProductStatus.ACTIVE
         ? { index: false, follow: false }
@@ -161,7 +195,7 @@ export default async function ProductDetailPage(props: Props) {
           ? image.altEn
           : image.altUz) ?? image.altUz,
   }));
-  const canonicalUrl = `/${data.requestedLocale.toLowerCase()}/products/${translation.slug}`;
+  const canonicalUrl = `/products/${translation.slug}`;
   const jsonLd = productJsonLd({
     name: translation.name,
     description: translation.description,
@@ -177,26 +211,52 @@ export default async function ProductDetailPage(props: Props) {
   const breadcrumbLd = breadcrumbJsonLd([
     {
       name: "Motobike Market",
-      url: absoluteUrl(`/${data.requestedLocale.toLowerCase()}`),
+      url: absoluteUrl("/"),
     },
     {
       name: "Catalog",
-      url: absoluteUrl(`/${data.requestedLocale.toLowerCase()}/catalog`),
+      url: absoluteUrl("/catalog"),
     },
     ...(category && categorySlug
       ? [
           {
             name: category.name,
-            url: absoluteUrl(
-              `/${data.requestedLocale.toLowerCase()}/categories/${categorySlug}`,
-            ),
+            url: absoluteUrl(`/categories/${categorySlug}`),
           },
         ]
       : []),
     { name: translation.name, url: absoluteUrl(canonicalUrl) },
   ]);
+  const specRows: [string, string][] =
+    product.type === ProductType.MOTORCYCLE && product.motorcycleSpec
+      ? [
+          ["Dvigatel hajmi", `${product.motorcycleSpec.engineCc} cc`],
+          ["Marka", product.motorcycleSpec.make],
+          ["Model", product.motorcycleSpec.model],
+          ["Yil", product.motorcycleSpec.year.toString()],
+          [
+            "Yurgan masofa",
+            `${product.motorcycleSpec.mileageKm.toLocaleString(localeCode)} km`,
+          ],
+          ["Holati", conditionLabel(product.condition)],
+          ["Rang", product.color ? colorMeta[product.color].label : "—"],
+          ["SKU", product.sku],
+          ["Brend", product.brand?.name ?? "—"],
+          ["Kategoriya", category?.name ?? "—"],
+        ]
+      : [
+          ["SKU", product.sku],
+          ["Brend", product.brand?.name ?? "—"],
+          ["Kategoriya", category?.name ?? "—"],
+          ["Part number", product.partSpec?.partNumber ?? "—"],
+          ["Holati", conditionLabel(product.condition)],
+          ["Rang", product.color ? colorMeta[product.color].label : "—"],
+          ["Mavjudlik", product.stock > 0 ? `${product.stock} dona` : "Yo‘q"],
+        ];
+  const color = product.color ? colorMeta[product.color] : null;
+
   return (
-    <div className="container pt-6 pb-28 lg:pb-16">
+    <div className="bg-[#f7f7f6] min-h-screen text-neutral-950 dark:bg-background dark:text-foreground">
       <script
         dangerouslySetInnerHTML={{
           __html: serializeJsonLd(jsonLd),
@@ -207,197 +267,214 @@ export default async function ProductDetailPage(props: Props) {
         dangerouslySetInnerHTML={{ __html: serializeJsonLd(breadcrumbLd) }}
         type="application/ld+json"
       />
-      {data.preview ? (
-        <div
-          className="border-primary bg-primary/10 mb-5 rounded-xl border p-3 text-sm font-bold"
-          role="status"
-        >
-          Admin preview · {product.status} · public indekslash o‘chirilgan
-        </div>
-      ) : null}
-      <nav
-        aria-label="Breadcrumb"
-        className="text-muted-foreground mb-6 flex flex-wrap gap-2 text-sm"
-      >
-        <Link href="/">Bosh sahifa</Link>
-        <span>/</span>
-        <Link href="/catalog">Katalog</Link>
-        {category ? (
-          <>
-            <span>/</span>
-            <Link
-              href={`/categories/${selected(product.category.translations, Locale.UZ)?.slug}`}
-            >
-              {category.name}
-            </Link>
-          </>
-        ) : null}
-        <span>/</span>
-        <span aria-current="page">{translation.name}</span>
-      </nav>
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.15fr)_minmax(22rem,.85fr)]">
-        <Reveal direction="right">
-          <ProductGallery images={images} />
-        </Reveal>
-        <Reveal direction="left">
-          <section className="grid gap-6 lg:sticky lg:top-24">
-            <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="text-primary text-sm font-black uppercase">
-                  {product.brand?.name ?? product.type}
-                </p>
-                <h1 className="mt-2 text-3xl font-black tracking-tight sm:text-4xl">
-                  {translation.name}
-                </h1>
-              </div>
-              <ProductLanguageLinks
-                preview={data.preview}
-                translations={product.translations.map(({ locale, slug }) => ({
-                  locale,
-                  slug,
-                }))}
-              />
-            </div>
-            <div>
-              <p className="text-3xl font-black">{price}</p>
-              {product.compareAtPrice ? (
-                <p className="text-muted-foreground line-through">
-                  {new Intl.NumberFormat(localeCode, {
-                    style: "currency",
-                    currency: product.currency,
-                    maximumFractionDigits: 0,
-                  }).format(Number(product.compareAtPrice))}
-                </p>
-              ) : null}
-            </div>
-            <dl className="grid grid-cols-2 gap-3 rounded-xl border p-4 text-sm">
-              <div>
-                <dt className="text-muted-foreground">SKU</dt>
-                <dd className="font-bold">{product.sku}</dd>
-              </div>
-              <div>
-                <dt className="text-muted-foreground">Mavjudlik</dt>
-                <dd
-                  className={
-                    product.stock > 0
-                      ? "font-bold text-emerald-700 dark:text-emerald-400"
-                      : "text-destructive font-bold"
-                  }
-                >
-                  {product.stock > 0
-                    ? `${product.stock} dona mavjud`
-                    : "Sotuvda yo‘q"}
-                </dd>
-              </div>
-            </dl>
-            <PurchasePanel
-              imageUrl={product.images[0]?.url}
-              name={translation.name}
-              price={product.price}
-              productId={product.id}
-              sku={product.sku}
-              stock={product.stock}
-            />
-          </section>
-        </Reveal>
-      </div>
-      <div className="mt-12 grid gap-8 lg:grid-cols-[1fr_.8fr]">
-        <Reveal direction="right">
-          <article>
-            <h2 className="text-2xl font-black">Tavsif</h2>
-            <div className="text-muted-foreground mt-4 leading-8 whitespace-pre-line">
-              {translation.description}
-            </div>
-          </article>
-        </Reveal>
-        <Reveal direction="left">
-          <section>
-            <h2 className="text-2xl font-black">Xususiyatlar</h2>
-            <dl className="mt-4 divide-y rounded-xl border">
-              {product.type === ProductType.MOTORCYCLE &&
-              product.motorcycleSpec ? (
-                Object.entries({
-                  Marka: product.motorcycleSpec.make,
-                  Model: product.motorcycleSpec.model,
-                  Yil: product.motorcycleSpec.year,
-                  "Dvigatel hajmi": `${product.motorcycleSpec.engineCc} cc`,
-                  "Yurgan masofa": `${product.motorcycleSpec.mileageKm.toLocaleString(localeCode)} km`,
-                  Holati: product.condition ?? "—",
-                }).map(([label, value]) => (
-                  <div className="flex justify-between gap-4 p-3" key={label}>
-                    <dt className="text-muted-foreground">{label}</dt>
-                    <dd className="text-right font-bold">{value}</dd>
-                  </div>
-                ))
-              ) : (
-                <>
-                  <div className="flex justify-between p-3">
-                    <dt className="text-muted-foreground">Part number</dt>
-                    <dd className="font-bold">
-                      {product.partSpec?.partNumber ?? "—"}
-                    </dd>
-                  </div>
-                </>
-              )}
-            </dl>
-          </section>
-        </Reveal>
-      </div>
-      {product.type === ProductType.PART && product.compatibilities.length ? (
-        <section className="mt-12">
-          <h2 className="text-2xl font-black">Mos keladigan mototsikllar</h2>
-          <div className="mt-4 overflow-x-auto rounded-xl border">
-            <table className="w-full text-left text-sm">
-              <thead className="bg-muted">
-                <tr>
-                  <th className="p-3">Marka</th>
-                  <th className="p-3">Model</th>
-                  <th className="p-3">Yillar</th>
-                  <th className="p-3">Dvigatel</th>
-                  <th className="p-3">Izoh</th>
-                </tr>
-              </thead>
-              <tbody>
-                {product.compatibilities.map((item) => (
-                  <tr className="border-t" key={item.id}>
-                    <td className="p-3 font-bold">{item.make}</td>
-                    <td className="p-3">{item.model}</td>
-                    <td className="p-3">
-                      {item.yearFrom ?? "—"}–{item.yearTo ?? "—"}
-                    </td>
-                    <td className="p-3">
-                      {item.engineCc ? `${item.engineCc} cc` : "—"}
-                    </td>
-                    <td className="p-3">{item.note ?? "—"}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      <main className="container pt-6 pb-28 lg:pb-16">
+        {data.preview ? (
+          <div
+            className="border-primary bg-primary/10 mb-5 rounded-md border p-3 text-sm font-bold"
+            role="status"
+          >
+            Admin preview · {product.status} · public indekslash o‘chirilgan
           </div>
-        </section>
-      ) : null}
-      {data.related.length ? (
-        <Reveal className="mt-16">
-          <section>
-            <div className="mb-6 flex justify-between">
-              <h2 className="text-2xl font-black">O‘xshash mahsulotlar</h2>
+        ) : null}
+        <nav
+          aria-label="Breadcrumb"
+          className="mb-6 flex flex-wrap items-center gap-1.5 text-xs text-zinc-500"
+        >
+          <Link aria-label="Bosh sahifa" href="/" className="hover:text-zinc-900 transition-colors">
+            <Home className="size-3.5" />
+          </Link>
+          <span className="text-zinc-300">/</span>
+          <Link href="/catalog" className="hover:text-zinc-900 transition-colors">Katalog</Link>
+          {category ? (
+            <>
+              <span className="text-zinc-300">/</span>
               <Link
-                className="font-bold hover:underline"
-                href={`/catalog?category=${selected(product.category.translations, Locale.UZ)?.slug}`}
+                href={`/categories/${selected(product.category.translations, Locale.UZ)?.slug}`}
+                className="hover:text-zinc-900 transition-colors"
               >
-                Barchasi
+                {category.name}
               </Link>
-            </div>
-            <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
-              {data.related.map((item, index) => (
-                <Reveal delay={index * 0.07} key={item.id}>
-                  <ProductCard product={item} />
-                </Reveal>
-              ))}
+            </>
+          ) : null}
+          <span className="text-zinc-300">/</span>
+          <span className="font-semibold text-zinc-800" aria-current="page">
+            {translation.name}
+          </span>
+        </nav>
+        <div className="grid items-start gap-9 lg:grid-cols-[minmax(0,2fr)_minmax(22rem,1fr)]">
+          {/* Left Column: Gallery & Bottom Tabs Info */}
+          <div className="grid gap-8">
+            <Reveal direction="right">
+              <ProductGallery images={images} />
+            </Reveal>
+
+            {/* Tabs and specs/description section (Large screens 2-col specs+description) */}
+            <Reveal>
+              <InteractiveTabsSection
+                specRows={specRows}
+                description={translation.description}
+              />
+            </Reveal>
+          </div>
+
+          {/* Right Column: Title, price, color, quantity and buy panel */}
+          <Reveal direction="left">
+            <aside className="lg:sticky lg:top-28">
+              <div className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm grid gap-5">
+                <section className="border-b border-zinc-100 pb-5">
+                  <h1 className="text-2xl font-black tracking-tight text-zinc-900 leading-tight">
+                    {translation.name}
+                  </h1>
+                  <p className="text-[#e31e24] mt-3.5 text-2xl font-black">
+                    {price}
+                  </p>
+                  {product.compareAtPrice ? (
+                    <p className="mt-1 text-sm text-zinc-400 line-through">
+                      {new Intl.NumberFormat(localeCode, {
+                        style: "currency",
+                        currency: product.currency,
+                        maximumFractionDigits: 0,
+                      }).format(Number(product.compareAtPrice))}
+                    </p>
+                  ) : null}
+                  <div className="mt-4 flex items-center gap-2 text-xs font-semibold text-emerald-600">
+                    <span className="flex size-5 items-center justify-center rounded-full bg-emerald-100 text-emerald-800">
+                      <CheckCircle2 className="size-3.5 fill-emerald-600 text-emerald-100" />
+                    </span>
+                    <span>
+                      {product.stock > 0 ? "Sotuvda mavjud" : "Sotuvda yo‘q"}
+                    </span>
+                  </div>
+                </section>
+                
+                <PurchasePanel
+                  productId={product.id}
+                  name={translation.name}
+                  price={product.price}
+                  sku={product.sku}
+                  stock={product.stock}
+                  imageUrl={product.images[0]?.url}
+                  initialColor={product.color || undefined}
+                />
+              </div>
+
+              {/* Delivery Quick Info Box on Right (mobile only? No, let's keep it clean or render side-by-side at bottom) */}
+              <div className="mt-6 lg:hidden">
+                <section className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
+                  <h2 className="mb-4 text-sm font-extrabold text-zinc-950 uppercase tracking-wider">Yetkazib berish</h2>
+                  <div className="grid gap-5 text-sm text-zinc-600">
+                    <div className="flex gap-3">
+                      <Truck className="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                      <div>
+                        <b className="text-zinc-900 font-bold">Toshkent shahrida yetkazib berish</b>
+                        <p className="text-zinc-500 text-xs mt-0.5">1-2 ish kuni ichida</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <MapPin className="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                      <div>
+                        <b className="text-zinc-900 font-bold">O‘zbekiston bo‘ylab yetkazib berish</b>
+                        <p className="text-zinc-500 text-xs mt-0.5">2-5 ish kuni ichida</p>
+                      </div>
+                    </div>
+                    <div className="flex gap-3">
+                      <Package className="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                      <div>
+                        <b className="text-zinc-900 font-bold">Do‘kondan olib ketish</b>
+                        <p className="text-zinc-500 text-xs mt-0.5">
+                          Buyurtmangizni do‘konimizdan olib ketishingiz mumkin
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              </div>
+            </aside>
+          </Reveal>
+        </div>
+
+        {/* Bottom Specs & Delivery Cards side-by-side for desktop, hidden on mobile since tabs handle it */}
+        <div className="mt-8 hidden lg:grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="opacity-0 h-0 pointer-events-none" aria-hidden="true" />
+          <section className="rounded-md border border-zinc-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-5 text-sm font-extrabold text-zinc-950 uppercase tracking-wider">Yetkazib berish</h2>
+            <div className="grid gap-5 text-sm text-zinc-600">
+              <div className="flex gap-3">
+                <Truck className="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                <div>
+                  <b className="text-zinc-900 font-bold">Toshkent shahrida yetkazib berish</b>
+                  <p className="text-zinc-500 text-xs mt-0.5">1-2 ish kuni ichida</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <MapPin className="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                <div>
+                  <b className="text-zinc-900 font-bold">O‘zbekiston bo‘ylab yetkazib berish</b>
+                  <p className="text-zinc-500 text-xs mt-0.5">2-5 ish kuni ichida</p>
+                </div>
+              </div>
+              <div className="flex gap-3">
+                <Package className="mt-0.5 size-5 shrink-0 text-zinc-400" />
+                <div>
+                  <b className="text-zinc-900 font-bold">Do‘kondan olib ketish</b>
+                  <p className="text-zinc-500 text-xs mt-0.5">
+                    Buyurtmangizni do‘konimizdan olib ketishingiz mumkin
+                  </p>
+                </div>
+              </div>
+              <div className="border-t border-zinc-100 pt-4 mt-2">
+                <Link href="/catalog" className="text-xs font-bold text-zinc-500 hover:text-red-600 underline">
+                  Batafsil ma'lumot
+                </Link>
+              </div>
             </div>
           </section>
+        </div>
+
+        {/* Compatibility table for parts */}
+        {product.type === ProductType.PART &&
+        product.compatibilities.length ? (
+          <section className="mt-12">
+            <h2 className="text-2xl font-black text-zinc-900">Mos keladigan mototsikllar</h2>
+            <div className="mt-4 overflow-x-auto rounded-md border border-zinc-200 bg-white shadow-sm">
+              <table className="w-full text-left text-sm">
+                <thead className="bg-zinc-50 border-b border-zinc-200">
+                  <tr>
+                    <th className="p-3 text-zinc-500 font-semibold">Marka</th>
+                    <th className="p-3 text-zinc-500 font-semibold">Model</th>
+                    <th className="p-3 text-zinc-500 font-semibold">Yillar</th>
+                    <th className="p-3 text-zinc-500 font-semibold">Dvigatel</th>
+                    <th className="p-3 text-zinc-500 font-semibold">Izoh</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-zinc-100">
+                  {product.compatibilities.map((item) => (
+                    <tr className="hover:bg-zinc-50/50 transition-colors" key={item.id}>
+                      <td className="p-3 font-bold text-zinc-950">{item.make}</td>
+                      <td className="p-3 text-zinc-600">{item.model}</td>
+                      <td className="p-3 text-zinc-600">
+                        {item.yearFrom ?? "—"}–{item.yearTo ?? "—"}
+                      </td>
+                      <td className="p-3 text-zinc-600">
+                        {item.engineCc ? `${item.engineCc} cc` : "—"}
+                      </td>
+                      <td className="p-3 text-zinc-500">{item.note ?? "—"}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        ) : null}
+
+        {/* Similar products section */}
+        <Reveal>
+          <SimilarProductsCarousel
+            products={data.related}
+            locale={data.requestedLocale === "RU" ? "RU" : data.requestedLocale === "EN" ? "EN" : "UZ"}
+          />
         </Reveal>
-      ) : null}
+      </main>
     </div>
   );
 }

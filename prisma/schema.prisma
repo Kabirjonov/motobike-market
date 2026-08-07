@@ -50,6 +50,21 @@ enum ProductCondition {
   USED
 }
 
+enum ProductColor {
+  BLACK
+  WHITE
+  RED
+  BLUE
+  GREEN
+  YELLOW
+  ORANGE
+  GRAY
+  SILVER
+  BROWN
+  GOLD
+  MULTICOLOR
+}
+
 enum OrderStatus {
   PENDING
   CONFIRMED
@@ -211,6 +226,7 @@ model Product {
   type            ProductType
   status          ProductStatus          @default(DRAFT)
   condition       ProductCondition?
+  color           ProductColor?
   categoryId      String
   brandId         String?
   price           Decimal                @db.Decimal(12, 2)

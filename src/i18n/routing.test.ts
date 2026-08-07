@@ -8,9 +8,10 @@ describe("localized routes", () => {
     expect(routing.defaultLocale).toBe("uz");
   });
 
-  it("switches locale without duplicating prefixes", () => {
-    expect(localePath("ru", "/uz/catalog")).toBe("/ru/catalog");
-    expect(localePath("en", "/ru/products/demo")).toBe("/en/products/demo");
+  it("removes locale prefixes from public URLs", () => {
+    expect(localePath("ru", "/uz/catalog")).toBe("/catalog");
+    expect(localePath("en", "/ru/products/demo")).toBe("/products/demo");
+    expect(localePath("uz", "/catalog")).toBe("/catalog");
     expect(isAppLocale("de")).toBe(false);
   });
 });

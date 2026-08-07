@@ -8,6 +8,7 @@ import { PrismaClient } from "../src/generated/prisma/client";
 import {
   AdminRole,
   Locale,
+  ProductColor,
   ProductCondition,
   ProductStatus,
   ProductType,
@@ -84,6 +85,7 @@ async function upsertProduct(input: {
     yearTo?: number;
   }[];
   condition?: ProductCondition;
+  color?: ProductColor;
   imageSlug: string;
   motorcycle?: {
     engineCc: number;
@@ -107,6 +109,7 @@ async function upsertProduct(input: {
       brandId: input.brandId,
       categoryId: input.categoryId,
       condition: input.condition,
+      color: input.color,
       currency: "UZS",
       price: input.price,
       compareAtPrice: input.compareAtPrice,
@@ -121,6 +124,7 @@ async function upsertProduct(input: {
       brandId: input.brandId,
       categoryId: input.categoryId,
       condition: input.condition,
+      color: input.color,
       price: input.price,
       compareAtPrice: input.compareAtPrice,
       isFeatured: input.isFeatured ?? false,
@@ -320,6 +324,7 @@ async function main() {
     brandId: yamaha.id,
     categoryId: motorcycles.id,
     condition: ProductCondition.NEW,
+    color: ProductColor.BLUE,
     imageSlug: "yamaha-mt-07-2025",
     motorcycle: {
       engineCc: 689,
@@ -377,6 +382,7 @@ async function main() {
       },
     ],
     condition: ProductCondition.NEW,
+    color: ProductColor.GOLD,
     imageSlug: "motul-7100-10w40",
     partNumber: "104091",
     price: "245000.00",
@@ -410,6 +416,7 @@ async function main() {
     brandId: givi.id,
     categoryId: accessories.id,
     condition: ProductCondition.NEW,
+    color: ProductColor.BLACK,
     imageSlug: "givi-b47-top-case",
     price: "2890000.00",
     sku: "ACC-GIVI-B47NML",
@@ -444,6 +451,7 @@ async function main() {
     brandId: ls2.id,
     categoryId: gear.id,
     condition: ProductCondition.NEW,
+    color: ProductColor.MULTICOLOR,
     imageSlug: "ls2-ff800-storm-ii",
     price: "2150000.00",
     sku: "GEAR-LS2-FF800-BLK-M",

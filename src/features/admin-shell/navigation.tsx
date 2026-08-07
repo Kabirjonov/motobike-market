@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,6 @@ function isActiveRoute(pathname: string, href: string) {
 }
 
 export function AdminNavigation({ className }: { className?: string }) {
-  const locale = useLocale();
   const t = useTranslations("admin.navigation");
   const pathname = usePathname();
 
@@ -82,7 +81,7 @@ export function AdminNavigation({ className }: { className?: string }) {
                 ? "bg-primary text-primary-foreground"
                 : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
             )}
-            href={`/${locale}${href}`}
+            href={href}
             key={href}
           >
             <Icon aria-hidden="true" className="size-4 shrink-0" />
@@ -95,12 +94,11 @@ export function AdminNavigation({ className }: { className?: string }) {
 }
 
 export function AdminBrand() {
-  const locale = useLocale();
   const t = useTranslations("admin");
   return (
     <Link
       className="focus-visible:ring-ring flex items-center gap-3 rounded-lg outline-none focus-visible:ring-2"
-      href={`/${locale}/admin`}
+      href="/admin"
     >
       <span className="bg-primary text-primary-foreground grid size-9 place-items-center rounded-lg">
         <Bike aria-hidden="true" className="size-5" />

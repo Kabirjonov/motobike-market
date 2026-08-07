@@ -3,12 +3,11 @@
 import { ChevronRight, Home } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 
 import { adminNavigation } from "./navigation";
 
 export function AdminBreadcrumbs() {
-  const locale = useLocale();
   const t = useTranslations("admin.navigation");
   const rawPathname = usePathname();
   const pathname = rawPathname.replace(/^\/(uz|ru|en)(?=\/|$)/, "") || "/";
@@ -27,7 +26,7 @@ export function AdminBreadcrumbs() {
           <Link
             aria-label={t("dashboard")}
             className="hover:text-foreground focus-visible:ring-ring rounded-sm outline-none focus-visible:ring-2"
-            href={`/${locale}/admin`}
+            href="/admin"
           >
             <Home aria-hidden="true" className="size-4" />
           </Link>

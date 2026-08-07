@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { useLocale } from "next-intl";
+import { StoreLocaleSwitcher } from "./locale";
 
 export function ProductLanguageLinks({
   translations,
@@ -10,25 +9,16 @@ export function ProductLanguageLinks({
   translations: { locale: "UZ" | "RU" | "EN"; slug: string }[];
   preview: boolean;
 }) {
-  const locale = useLocale();
+  const suffix = preview ? "?preview=1" : "";
+  const localizedPaths = Object.fromEntries(
+    translations.map((item) => [
+      item.locale.toLowerCase(),
+      `/products/${item.slug}${suffix}`,
+    ]),
+  );
   return (
-    <nav aria-label="Mahsulot tili" className="flex gap-1">
-      {translations.map((item) => {
-        const lang = item.locale.toLowerCase();
-        const params = new URLSearchParams();
-        if (preview) params.set("preview", "1");
-        const query = params.toString();
-        return (
-          <Link
-            aria-current={locale === lang ? "page" : undefined}
-            className="aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground rounded-md border px-2 py-1 text-xs font-bold"
-            href={`/${lang}/products/${item.slug}${query ? `?${query}` : ""}`}
-            key={item.locale}
-          >
-            {item.locale}
-          </Link>
-        );
-      })}
+    <nav aria-label="Mahsulot tili">
+      <StoreLocaleSwitcher localizedPaths={localizedPaths} variant="buttons" />
     </nav>
   );
 }

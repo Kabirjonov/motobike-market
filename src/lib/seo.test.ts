@@ -1,22 +1,18 @@
 import { describe, expect, it } from "vitest";
 
-import {
-  breadcrumbJsonLd,
-  localeAlternates,
-  localizedMetadata,
-  productJsonLd,
-} from "./seo";
+import { breadcrumbJsonLd, localizedMetadata, productJsonLd } from "./seo";
 
 describe("SEO contracts", () => {
-  it("builds canonical and complete hreflang metadata", () => {
+  it("builds a clean canonical URL without locale prefixes", () => {
     const metadata = localizedMetadata({
       locale: "ru",
       path: "catalog",
       title: "Каталог",
       description: "Описание",
     });
-    expect(metadata.alternates?.canonical).toContain("/ru/catalog");
-    expect(metadata.alternates?.languages).toEqual(localeAlternates("catalog"));
+    expect(metadata.alternates?.canonical).toContain("/catalog");
+    expect(metadata.alternates?.canonical).not.toContain("/ru/catalog");
+    expect(metadata.alternates?.languages).toBeUndefined();
   });
 
   it("creates Google Product/Offer without fake ratings", () => {
@@ -29,7 +25,7 @@ describe("SEO contracts", () => {
       price: "100.00",
       currency: "UZS",
       stock: 1,
-      url: "https://example.com/uz/products/honda",
+      url: "https://example.com/products/honda",
     });
     expect(json).toMatchObject({
       "@type": "Product",

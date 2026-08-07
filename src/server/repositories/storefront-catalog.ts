@@ -143,17 +143,30 @@ export async function getHomeCatalog() {
   cacheLife("hours");
   cacheTag("products", "catalog-facets");
   const db = getPrismaClient();
-  const [featured, categories] = await Promise.all([
+  const [motorcycles, parts, gear, accessories, categories] = await Promise.all([
     db.product.findMany({
-      where: {
-        archivedAt: null,
-        status: ProductStatus.ACTIVE,
-        isFeatured: true,
-        type: "MOTORCYCLE",
-      },
+      where: { archivedAt: null, status: ProductStatus.ACTIVE, type: "MOTORCYCLE" },
       select: productCardSelect,
-      orderBy: { createdAt: "desc" },
-      take: 4,
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      take: 8,
+    }),
+    db.product.findMany({
+      where: { archivedAt: null, status: ProductStatus.ACTIVE, type: "PART" },
+      select: productCardSelect,
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      take: 8,
+    }),
+    db.product.findMany({
+      where: { archivedAt: null, status: ProductStatus.ACTIVE, type: "GEAR" },
+      select: productCardSelect,
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      take: 8,
+    }),
+    db.product.findMany({
+      where: { archivedAt: null, status: ProductStatus.ACTIVE, type: "ACCESSORY" },
+      select: productCardSelect,
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      take: 8,
     }),
     db.category.findMany({
       where: { archivedAt: null, isActive: true },
@@ -172,7 +185,13 @@ export async function getHomeCatalog() {
       take: 8,
     }),
   ]);
-  return { categories, featured: serializeProductCards(featured) };
+  return {
+    categories,
+    motorcycles: serializeProductCards(motorcycles),
+    parts: serializeProductCards(parts),
+    gear: serializeProductCards(gear),
+    accessories: serializeProductCards(accessories),
+  };
 }
 
 export async function findCategoryLanding(slug: string) {

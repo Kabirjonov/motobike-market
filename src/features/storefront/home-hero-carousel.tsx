@@ -32,7 +32,7 @@ const benefits = [
   [RefreshCcw, "Oson qaytarish", "14 kun ichida"],
 ] as const;
 
-export function HomeHeroCarousel({ locale }: { locale: string }) {
+export function HomeHeroCarousel() {
   const [active, setActive] = useState(0);
   const [paused, setPaused] = useState(false);
   const reducedMotion = useReducedMotion();
@@ -110,7 +110,7 @@ export function HomeHeroCarousel({ locale }: { locale: string }) {
           >
             <Link
               className="mt-7 inline-flex h-12 items-center gap-3 rounded-md bg-red-600 px-6 text-sm font-bold transition hover:bg-red-500"
-              href={`/${locale}/catalog`}
+              href="/catalog"
             >
               Katalogni ko‘rish <ArrowRight className="size-4" />
             </Link>
